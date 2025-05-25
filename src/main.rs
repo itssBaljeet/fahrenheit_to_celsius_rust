@@ -2,11 +2,10 @@ use temperature::{ConvertedTemp, Unit};
 
 pub mod temperature;
 pub mod util;
-pub mod tests;
 
 fn main() {
     println!("Temperature Converter");
-    
+
     let unit: Unit = util::get_unit();
 
     let temperature: ConvertedTemp = util::get_temp(&unit);
