@@ -1,25 +1,22 @@
 use std::io;
 
+use temperature::{ConvertedTemp, Unit};
+
+pub mod temperature;
+pub mod tests;
+
 fn main() {
     println!("Hello, world!");
     println!("And welcome to my first toy CLI program in Rust!");
 
-    let (old_unit, new_unit): (String, String) = get_unit();
+    let unit: Unit = get_unit();
 
-    let (old_temp, new_temp): (i32, i32) = get_temp(&new_unit);
+    let temperature: ConvertedTemp = get_temp(&unit);
 
-    println!("{old_temp} degrees in {old_unit} is {new_temp} degrees in {new_unit}")
+    println!("{0} degrees in {1} is {2} degrees in {3}", temperature.original, unit, temperature.converted, unit.opposite())
 }
 
-fn fahrenheit_to_celsius(temp: i32) -> i32 {
-    (temp - 32) * 5/9
-}
-
-fn celsius_to_fahrenheit(temp: i32) -> i32 {
-    (temp * 9/5) + 32
-}
-
-fn get_unit() -> (String, String) {
+fn get_unit() -> Unit {
     println!("Convert to Celsius or Fahrenheit? (c/f)");
 
     loop {
@@ -31,21 +28,21 @@ fn get_unit() -> (String, String) {
 
         match unit.trim().to_lowercase().as_str() {
         "c" => {
-            break (String::from("Fahrenheit"), String::from("Celsius"))
+            return Unit::Celsius
             },
         "f" => {
-            break (String::from("Celsius"), String::from("Fahrenheit"))
+            return Unit::Fahrenheit
             },
         _ => {
             println!("Please input 'c' or 'f' only!");
-            continue;
+            continue
             },
         };
     }
 }
 
-fn get_temp(unit: &str) -> (i32, i32) {
-    println!("What temperature do you want to convert from?");
+fn get_temp(unit: &Unit) -> ConvertedTemp {
+    println!("Enter temperature in {}", unit.opposite());
 
     loop {
         let mut temp = String::new();
@@ -54,18 +51,17 @@ fn get_temp(unit: &str) -> (i32, i32) {
             .read_line(&mut temp)
             .expect("Failed to read line!");
 
-        let temp: i32 = match temp.trim().parse() {
+        let temp: f64 = match temp.trim().parse() {
             Ok(num) => num,
             Err(_) => {
-                println!("NaN");
-                continue;
+                println!("Please enter a valid number.");
+                continue
             }
         };
 
         match unit {
-            "Fahrenheit" => return (temp, celsius_to_fahrenheit(temp)),
-            "Celsius" => return (temp, fahrenheit_to_celsius(temp)),
-            _ => panic!("How the hell did you get here?"),
+            Unit::Fahrenheit => return ConvertedTemp::celsius_to_fahrenheit(temp),
+            Unit::Celsius => return ConvertedTemp::fahrenheit_to_celsius(temp),
         }
     }
 }
